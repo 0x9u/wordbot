@@ -2,5 +2,4 @@ discord.py
 python-dotenv
 unidecode
 supabase
-dotenv
 unicodedata
