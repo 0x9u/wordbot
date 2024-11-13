@@ -31,7 +31,7 @@ def detect_word(text: str) -> int:
     normalised = unicodedata.normalize("NFD", text)
     normalised = re.sub(r'[\u0300-\u036f]', '', "".join([char for char in normalised if unicodedata.category(char) != "Mn"]))
 
-    regex = fr'.*?(?:(br|[{letters.LETTER_N}{letters.LETTER_J}]+)[\W\s]*?)+(?:[/\\\(\){letters.LETTER_I}]+[\W\s]*?)+(?:[{letters.LETTER_G}{letters.LETTER_R}]+[\W\s]*?)+(?:[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]+[\W\s]*?|(?:[{letters.LETTER_E}]+[\W\s]*?[{letters.LETTER_R}]+[\W\s]*?))'
+    regex = fr'.*?(?:(br|[{letters.LETTER_N}{letters.LETTER_J}]+)[\W\s]*?)+(?:[/\\\(\){letters.LETTER_I}{letters.LETTER_E}]+[\W\s]*?)+(?:[{letters.LETTER_G}{letters.LETTER_R}]+[\W\s]*?)+(?:[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]+[\W\s]*?|(?:[{letters.LETTER_E}]+[\W\s]*?[{letters.LETTER_R}]+[\W\s]*?))'
   
     
     return len(re.findall(regex, normalised, re.IGNORECASE | re.UNICODE))

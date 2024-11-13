@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import detect.detector as detector
 import db.db as db
+import helpers.generate as generate
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -33,6 +34,7 @@ async def on_message(message: discord.Message) -> None:
   if newCount > 0:
     db.verify_user(message.author.id)
     db.update_leaderboard(message.author.id, newCount)
+    db.update_leaderboard_guild(message.author.id, message.guild.id, newCount)
     #await message.channel.send(f"Hey {message.author.mention}, you said a racial slur! You have been added to the leaderboard.")
 
   await bot.process_commands(message)
@@ -43,20 +45,13 @@ async def on_message(message: discord.Message) -> None:
 async def leaderboard(ctx):
   print("Leaderboard")
   leaderboard = db.get_leaderboard()
-  msg = "```\n"  # Start the message with a code block for better alignment
-  msg += f"{'Rank':<5} | {'Name':<20} | {'Count':>5}\n"
-  msg += "-" * 40 + "\n"  # Add a separator line
-  # Loop through each user and format their rank, name, and count
-  for i, user in enumerate(leaderboard):
-    userData = await bot.fetch_user(user["userId"])
-    rank = i + 1
-    name = userData.name
-    count = user["count"]
-    msg += f"{rank:<5} | {name:<20} | {count:>5}\n"  # Adjust columns for alignment
+  await ctx.send(await generate.generate_leaderboard(bot, leaderboard, 'Global Leaderboard'))
 
-  msg += "```"  # End the message with a code block
-
-  await ctx.send(f"**Leaderboard**\n{msg}")
+@bot.command()
+async def leaderboard_guild(ctx):
+  print("Leaderboard guild")
+  leaderboard = db.get_leaderboard_guild(ctx.guild.id)
+  await ctx.send(await generate.generate_leaderboard(bot, leaderboard, 'Server Leaderboard'))
 
 
 bot.run(TOKEN)
