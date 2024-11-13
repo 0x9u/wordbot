@@ -33,7 +33,7 @@ async def on_message(message: discord.Message) -> None:
   if newCount > 0:
     db.verify_user(message.author.id)
     db.update_leaderboard(message.author.id, newCount)
-    await message.channel.send(f"Hey {message.author.mention}, you said a racial slur! You have been added to the leaderboard.")
+    #await message.channel.send(f"Hey {message.author.mention}, you said a racial slur! You have been added to the leaderboard.")
 
   await bot.process_commands(message)
 
