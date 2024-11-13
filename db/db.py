@@ -41,7 +41,7 @@ class DB:
             return False
         return True
     
-    def update_leaderboard(self, userId):
+    def update_leaderboard(self, userId, newCount):
         """
         Updates the leaderboard with a new entry for the given user.
 
@@ -55,6 +55,6 @@ class DB:
         """
         countData = self.supabase.table("leaderboard").select("count").eq("userId", userId).execute()
         count = 0 if len(countData.data) == 0 else countData.data[0].get("count")
-        self.supabase.table("leaderboard").upsert({"userId": userId, "count": count + 1}).execute()
+        self.supabase.table("leaderboard").upsert({"userId": userId, "count": count + newCount}).execute()
         
         

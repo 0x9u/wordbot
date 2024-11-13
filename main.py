@@ -28,10 +28,11 @@ async def on_message(message: discord.Message) -> None:
  
   print(f"{message.author} said: {message.content}")
   
+  newCount = detector.detect_word(message.content)
   # remove accents from the message
-  if detector.detect_word(message.content):
+  if newCount > 0:
     db.verify_user(message.author.id)
-    db.update_leaderboard(message.author.id)
+    db.update_leaderboard(message.author.id, newCount)
     await message.channel.send(f"Hey {message.author.mention}, you said a racial slur! You have been added to the leaderboard.")
 
   await bot.process_commands(message)

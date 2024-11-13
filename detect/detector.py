@@ -4,7 +4,7 @@ import re
 
 import detect.letters as letters
 
-def detect_word(text: str) -> bool:
+def detect_word(text: str) -> int:
     """
     Detects if a given text contains a racial slur.
 
@@ -25,7 +25,7 @@ def detect_word(text: str) -> bool:
     # decoded used to remove diacritics
     text = text.replace("\n", "").replace("\r", "")
     
-    decoded = unidecode(text)
+    #decoded = unidecode(text)
     # normalised used to cover chinese/other characters
     # that look similar to letters
     normalised = unicodedata.normalize("NFD", text)
@@ -34,4 +34,4 @@ def detect_word(text: str) -> bool:
     regex = fr'.*?(?:(br|[{letters.LETTER_N}{letters.LETTER_J}]+)[\W\s]*?)+(?:[/\\\(\){letters.LETTER_I}]+[\W\s]*?)+(?:[{letters.LETTER_G}{letters.LETTER_R}]+[\W\s]*?)+(?:[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]+[\W\s]*?|(?:[{letters.LETTER_E}]+[\W\s]*?[{letters.LETTER_R}]+[\W\s]*?))'
   
     
-    return re.match(regex, decoded, re.IGNORECASE | re.UNICODE) or re.match(regex, normalised, re.IGNORECASE | re.UNICODE)
+    return len(re.findall(regex, normalised, re.IGNORECASE | re.UNICODE))
