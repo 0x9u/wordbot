@@ -186,6 +186,9 @@ class DB:
         coins = coinsData.data[0].get("coins")
         return coins
     
+    def get_user_coins_leaderboard(self) -> list:
+        return self.supabase.table("users").select("*").order("coins", desc=True).execute().data
+
     def get_user_level(self, userId: str) -> int:
         """
         Gets the level for the given user.

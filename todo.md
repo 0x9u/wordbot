@@ -2,3 +2,7 @@
   - Users can steal points and put in bank
   - Users can buy slaves that farm for points
 - add crown for top global player
+- use transformers as multipliers for points and xp
+  - https://huggingface.co/unitary/toxic-bert
+- add level/points leaderboard
+- make command to check other level
