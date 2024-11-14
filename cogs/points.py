@@ -44,31 +44,24 @@ class Points(commands.Cog):
         db.update_user_coins(userId, self.coinRate)
         if db.update_user_xp(userId, self.xpRate):
           await message.channel.send(f"Congrats {message.author.mention}, you leveled up!")
-
-  # todo make optional args
+    
   @commands.command(name="level", help="Display the level of the user.")
-  async def level(self, ctx):
-    userId = str(ctx.author.id)
-    level = db.get_user_level(userId)
-    await ctx.send(f"{ctx.author.mention}, you are level {level} with {db.get_user_xp(userId)} XP.")
-  
-  @commands.command(name="level_player", help="Display the level of the user selected.")
-  async def level_player(self, ctx, user: discord.User):
+  async def level(self, ctx, user: discord.User = None):
+    if not user:
+      user = ctx.author
     userId = str(user.id)
+    db.verify_user(userId)
     level = db.get_user_level(userId)
-    await ctx.send(f"{user.mention} is {level} with {db.get_user_xp(userId)} XP.")
+    await ctx.send(f"{user.mention}, you are level {level} with {db.get_user_xp(userId)} XP.")
   
   @commands.command(name="coins", help="Display the coins of the user.")
-  async def coins(self, ctx):
-    userId = str(ctx.author.id)
-    coins = db.get_user_coins(userId)
-    await ctx.send(f"{ctx.author.mention}, you have {coins} coins.")
-  
-  @commands.command(name="coins_player", help="Display the coins of the user selected.")
-  async def coins_player(self, ctx, user: discord.User):
+  async def coins(self, ctx, user: discord.User = None):
+    if not user:
+      user = ctx.author
     userId = str(user.id)
+    db.verify_user(userId)
     coins = db.get_user_coins(userId)
-    await ctx.send(f"{user.mention} has {coins} coins.")
+    await ctx.send(f"{user.mention}, you have {coins} coins.")
     
 async def setup(bot):
   await bot.add_cog(Points(bot))
