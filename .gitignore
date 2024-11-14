@@ -1,3 +1,5 @@
 .env
 creds.txt
 link.txt
+__pycache__/
+*.py[cod]
