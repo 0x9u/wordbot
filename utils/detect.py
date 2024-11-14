@@ -2,7 +2,7 @@ from unidecode import unidecode
 import unicodedata
 import re
 
-import detect.letters as letters
+import utils.letters as letters
 
 def detect_word(text: str) -> int:
     """
@@ -34,4 +34,4 @@ def detect_word(text: str) -> int:
     regex = fr'.*?(?:(br|[{letters.LETTER_N}{letters.LETTER_J}]+)[\W\s]*?)+(?:[/\\\(\){letters.LETTER_I}{letters.LETTER_E}]+[\W\s]*?)+(?:[{letters.LETTER_G}{letters.LETTER_R}]+[\W\s]*?)+(?:[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]+[\W\s]*?|(?:[{letters.LETTER_E}]+[\W\s]*?[{letters.LETTER_R}]+[\W\s]*?))'
   
     
-    return len(re.findall(regex, normalised, re.IGNORECASE | re.UNICODE))
+    return len(set(re.findall(regex, normalised, re.IGNORECASE | re.UNICODE)))

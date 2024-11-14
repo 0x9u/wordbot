@@ -1,0 +1,4 @@
+- Add points system to n word bot
+  - Users can steal points and put in bank
+  - Users can buy slaves that farm for points
+- add crown for top global player
