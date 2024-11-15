@@ -1,8 +1,11 @@
-from unidecode import unidecode
 import unicodedata
 import re
 
 import utils.letters as letters
+
+REGEX = fr'.*?(br|[{letters.LETTER_N}{letters.LETTER_J}]+)([\W\s]*[{letters.LETTER_I}{letters.LETTER_E}])+([\W\s]*[{letters.LETTER_G}]{{1,2}}[{letters.LETTER_R}]?)+([\W\s]*[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]|[\W\s]*[{letters.LETTER_E}]+[\W\s]*[{letters.LETTER_R}])+'
+
+detect = re.compile(REGEX, re.IGNORECASE | re.UNICODE)
 
 def detect_word(text: str) -> int:
     """
@@ -23,15 +26,14 @@ def detect_word(text: str) -> int:
     """
     
     # decoded used to remove diacritics
-    text = text.replace("\n", "").replace("\r", "")
+    stripped = text.replace("\n", "").replace("\r", "")
     
     #decoded = unidecode(text)
     # normalised used to cover chinese/other characters
     # that look similar to letters
-    normalised = unicodedata.normalize("NFD", text)
+    
+    normalised = unicodedata.normalize("NFD", stripped)
     normalised = re.sub(r'[\u0300-\u036f]', '', "".join([char for char in normalised if unicodedata.category(char) != "Mn"]))
 
-    regex = fr'.*?(?:(br|[{letters.LETTER_N}{letters.LETTER_J}]+)[\W\s]*?)+(?:[/\\\(\){letters.LETTER_I}{letters.LETTER_E}]+[\W\s]*?)+(?:[{letters.LETTER_G}{letters.LETTER_R}]+[\W\s]*?)+(?:[{letters.LETTER_A}{letters.LETTER_Y}{letters.LETTER_O}]+[\W\s]*?|(?:[{letters.LETTER_E}]+[\W\s]*?[{letters.LETTER_R}]+[\W\s]*?))'
-  
     
-    return len(set(re.findall(regex, normalised, re.IGNORECASE | re.UNICODE)))
+    return len(set(detect.findall(normalised)))

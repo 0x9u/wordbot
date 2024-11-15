@@ -1,14 +1,12 @@
 import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from utils import canLevelUp
+from utils import can_level_up
 
 load_dotenv()
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL")
 SUPABASE_KEY: str = os.getenv("SUPABASE_KEY")
-
-print(SUPABASE_URL, SUPABASE_KEY)
 
 
 class DB:
@@ -41,9 +39,9 @@ class DB:
     def get_leaderboard(self):
         return self.supabase.table("leaderboard").select("*").order("count", desc=True).execute().data
 
-    def update_leaderboard(self, userId: str, newCount: int):
+    def update_leaderboard(self, user_id: str, new_count: int):
         countData = self.supabase.table("leaderboard").select(
-        """
+            """
         Updates the leaderboard with a new entry for the given user.
 
         If the user already has an entry in the leaderboard, the count is incremented by one.
@@ -51,24 +49,24 @@ class DB:
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to update the leaderboard for
-        newCount : int
+        new_count : int
             The number of new racial slurs to add to the leaderboard
         """
-            "count").eq("userId", userId).execute()
+            "count").eq("user_id", user_id).execute()
         count = 0 if len(
             countData.data) == 0 else countData.data[0].get("count")
         self.supabase.table("leaderboard").upsert(
-            {"userId": userId, "count": count + newCount}).execute()
+            {"user_id": user_id, "count": count + new_count}).execute()
 
-    def get_leaderboard_guild(self, guildId: str) -> list:
+    def get_leaderboard_guild(self, guild_id: str) -> list:
         """
         Gets the leaderboard for the given guild.
 
         Parameters
         ----------
-        guildId : str
+        guild_id : str
             The id of the guild to get the leaderboard for
 
         Returns
@@ -76,9 +74,9 @@ class DB:
         list
             A list of dictionaries containing the leaderboard data for the given guild
         """
-        return self.supabase.table("leaderboard_guild").select("*").eq("guildId", guildId).order("count", desc=True).execute().data
+        return self.supabase.table("leaderboard_guild").select("*").eq("guild_id", guild_id).order("count", desc=True).execute().data
 
-    def update_leaderboard_guild(self, userId: str, guildId: str, newCount: int):
+    def update_leaderboard_guild(self, user_id: str, guild_id: str, new_count: int):
         """
         Updates the leaderboard for the given guild with a new entry for the given user.
 
@@ -87,21 +85,24 @@ class DB:
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to update the leaderboard for
-        guildId : str
+        guild_id : str
             The id of the guild to update the leaderboard for
-        newCount : int
+        new_count : int
             The new count to add to the leaderboard entry
         """
         countData = self.supabase.table("leaderboard_guild").select(
-            "count").eq("guildId", guildId).eq("userId", userId).execute()
+            "count").eq("guild_id", guild_id).eq("user_id", user_id).execute()
         count = 0 if len(
             countData.data) == 0 else countData.data[0].get("count")
         self.supabase.table("leaderboard_guild").upsert(
-            {"guildId": guildId, "userId": userId, "count": count + newCount}).execute()
+            {"guild_id": guild_id, "user_id": user_id, "count": count + new_count}).execute()
+    
+    def get_user_word_count(self, user_id: str) -> int:
+        return self.supabase.table("leaderboard").select("count").eq("user_id", user_id).execute().data[0].get("count")
 
-    def get_user_ratelimit(self, userId: str) -> int:
+    def get_user_ratelimit(self, user_id: str) -> int:
         """
         Gets the ratelimit for the given user.
 
@@ -109,7 +110,7 @@ class DB:
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to get the ratelimit for
 
         Returns
@@ -117,15 +118,15 @@ class DB:
         int
             The ratelimit for the given user
         """
-        
-        if userId in self.ratelimit:
-            return self.ratelimit[userId]
-        
-        self.ratelimit[userId] = self.supabase.table("users").select("ratelimit").eq("id", userId).execute().data[0].get("ratelimit")
-        return self.ratelimit[userId]
 
-    def invalidate_user_ratelimit(self, userId: str):
-        
+        if user_id in self.ratelimit:
+            return self.ratelimit[user_id]
+
+        self.ratelimit[user_id] = self.supabase.table("users").select(
+            "ratelimit").eq("id", user_id).execute().data[0].get("ratelimit")
+        return self.ratelimit[user_id]
+
+    def invalidate_user_ratelimit(self, user_id: str):
         """
         Invalidates the cached ratelimit for the given user.
 
@@ -134,47 +135,50 @@ class DB:
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user whose ratelimit cache is to be invalidated
         """
-        del self.ratelimit[userId]
-    
-    def update_user_ratelimit(self, userId: str, ratelimit: int):
+        del self.ratelimit[user_id]
+
+    def update_user_ratelimit(self, user_id: str, ratelimit: int):
         """
         Updates the ratelimit for the given user in the database and caches the result.
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to update the ratelimit for
         ratelimit : int
             The new ratelimit for the user
         """
-        self.supabase.table("users").upsert({"id": userId, "ratelimit": ratelimit}).execute()
-        self.ratelimit[userId] = ratelimit
-    
-    def update_user_coins(self, userId: str, amount: int):
+        self.supabase.table("users").upsert(
+            {"id": user_id, "ratelimit": ratelimit}).execute()
+        self.ratelimit[user_id] = ratelimit
+
+    def update_user_coins(self, user_id: str, amount: int):
         """
         Updates the coins for the given user in the database.
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to update the coins for
         coins : int
             The new coins for the user
         """
-        coinsData = self.supabase.table("users").select("coins").eq("id", userId).execute()
-        coins = coinsData.data[0].get("coins")
-        self.supabase.table("users").upsert({"id": userId, "coins": coins + amount }).execute()
-    
-    def get_user_coins(self, userId: str) -> int:
+        coins_data = self.supabase.table("users").select(
+            "coins").eq("id", user_id).execute()
+        coins = coins_data.data[0].get("coins")
+        self.supabase.table("users").upsert(
+            {"id": user_id, "coins": coins + amount}).execute()
+
+    def get_user_coins(self, user_id: str) -> int:
         """
         Gets the coins for the given user.
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to get the coins for
 
         Returns
@@ -182,20 +186,21 @@ class DB:
         int
             The coins for the given user
         """
-        coinsData = self.supabase.table("users").select("coins").eq("id", userId).execute()
-        coins = coinsData.data[0].get("coins")
+        coins_data = self.supabase.table("users").select(
+            "coins").eq("id", user_id).execute()
+        coins = coins_data.data[0].get("coins")
         return coins
-    
+
     def get_user_coins_leaderboard(self) -> list:
         return self.supabase.table("users").select("*").order("coins", desc=True).execute().data
 
-    def get_user_level(self, userId: str) -> int:
+    def get_user_level(self, user_id: str) -> int:
         """
         Gets the level for the given user.
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to get the level for
 
         Returns
@@ -203,11 +208,12 @@ class DB:
         int
             The level for the given user
         """
-        levelData = self.supabase.table("users").select("level").eq("id", userId).execute()
+        levelData = self.supabase.table("users").select(
+            "level").eq("id", user_id).execute()
         level = levelData.data[0].get("level")
         return level
-    
-    def update_user_xp(self, userId: str, amount: int) -> bool:
+
+    def update_user_xp(self, user_id: str, amount: int) -> bool:
         """
         Updates the XP for the given user in the database and checks if they leveled up.
 
@@ -215,7 +221,7 @@ class DB:
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to update the XP for
         amount : int
             The amount of XP to add to the user
@@ -225,26 +231,30 @@ class DB:
         bool
             True if the user leveled up, False if they didn't
         """
-        
-        xpData = self.supabase.table("users").select("xp").eq("id", userId).execute()
-        xp = xpData.data[0].get("xp")
-        self.supabase.table("users").upsert({"id": userId, "xp": xp + amount }).execute()
-        
+
+        xp_data = self.supabase.table("users").select(
+            "xp").eq("id", user_id).execute()
+        xp = xp_data.data[0].get("xp")
+        self.supabase.table("users").upsert(
+            {"id": user_id, "xp": xp + amount}).execute()
+
         # check if leveled up
-        level = self.get_user_level(userId)
-        ableToLevelUp = canLevelUp(xp + amount, level)
-        if ableToLevelUp:
-            self.supabase.table("users").upsert({"id": userId, "level": level + 1}).execute()
-            self.supabase.table("users").upsert({"id": userId, "xp": 0}).execute()
-        return ableToLevelUp
-    
-    def get_user_xp(self, userId: str) -> int:
+        level = self.get_user_level(user_id)
+        able_to_level_up = can_level_up(xp + amount, level)
+        if able_to_level_up:
+            self.supabase.table("users").upsert(
+                {"id": user_id, "level": level + 1}).execute()
+            self.supabase.table("users").upsert(
+                {"id": user_id, "xp": 0}).execute()
+        return able_to_level_up
+
+    def get_user_xp(self, user_id: str) -> int:
         """
         Gets the current XP for the given user.
 
         Parameters
         ----------
-        userId : str
+        user_id : str
             The id of the user to get the XP for
 
         Returns
@@ -252,19 +262,199 @@ class DB:
         int
             The current XP for the given user
         """
-        
-        xpData = self.supabase.table("users").select("xp").eq("id", userId).execute()
-        xp = xpData.data[0].get("xp")
-        return xp
-    
-        
-        
-        
-        
-    
 
+        xp_data = self.supabase.table("users").select(
+            "xp").eq("id", user_id).execute()
+        return xp_data.data[0].get("xp")
+
+    def get_bank_coins(self, user_id: str) -> int:
+        """
+        Gets the bank coins for the given user.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to get the bank coins for
+
+        Returns
+        -------
+        int
+            The bank coins for the given user
+        """
+        coins_data = self.supabase.table("users").select(
+            "banked_coins").eq("id", user_id).execute()
+        return coins_data.data[0].get("banked_coins")
+
+    def update_bank_coins(self, user_id: str, amount: int):
+        """
+        Updates the bank coins for the given user in the database.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to update the bank coins for
+        amount : int
+            The new bank coins for the user
+        """
+        coins_data = self.supabase.table("users").select(
+            "banked_coins").eq("id", user_id).execute()
+        coins = coins_data.data[0].get("banked_coins")
+        self.supabase.table("users").upsert(
+            {"id": user_id, "banked_coins": coins + amount}).execute()
+
+    def get_max_bank_coins(self, user_id: str) -> int:
+        """
+        Gets the max bank coins for the given user.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to get the max bank coins for
+
+        Returns
+        -------
+        int
+            The max bank coins for the given user
+        """
+        coins_data = self.supabase.table("users").select(
+            "max_banked_coins").eq("id", user_id).execute()
+        return coins_data.data[0].get("max_banked_coins")
+
+    def update_max_bank_coins(self, user_id: str, amount: int):
+        """
+        Updates the max bank coins for the given user in the database.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to update the max bank coins for
+        amount : int
+            The new max bank coins for the user
+        """
+        coins_data = self.supabase.table("users").select(
+            "max_banked_coins").eq("id", user_id).execute()
+        coins = coins_data.data[0].get("max_banked_coins")
+        self.supabase.table("users").upsert(
+            {"id": user_id, "max_banked_coins": coins + amount}).execute()
+
+    def get_items_shop(self):
+        """
+        Retrieves all items from the items table in the database that have a non-null price.
+
+        Returns
+        -------
+        list
+            A list of dictionaries containing the data for items with a non-null price.
+        """
+        return self.supabase.table("items").select("*").not_.is_("price", "null").execute().data
+
+    def get_all_items(self):
+        """
+        Retrieves all items from the items table in the database.
+
+        Returns
+        -------
+        list
+            A list of dictionaries containing the data for all items.
+        """
+        return self.supabase.table("items").select("*").execute().data
+    
+    def get_item_shop(self, name : str):
+        """
+        Retrieves the item from the items table in the database with the given name that has a non-null price.
+
+        Parameters
+        ----------
+        name : str
+            The name of the item to retrieve
+
+        Returns
+        -------
+        dict
+            A dictionary containing the data for the item with the given name and a non-null price
+        """
+        return self.supabase.table("items").select("*").not_.is_("price", "null").eq("name", name).execute().data
+
+    def get_item(self, name : str):
+        """
+        Retrieves the item from the items table in the database with the given name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the item to retrieve
+
+        Returns
+        -------
+        dict
+            A dictionary containing the data for the item with the given name
+        """
+        return self.supabase.table("items").select("*").eq("name", name).execute().data[0]
+    
+    def get_inventory(self, user_id: str):
+        """
+        Retrieves the inventory for the given user.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to get the inventory for
+
+        Returns
+        -------
+        list
+            A list of dictionaries containing the inventory data for the given user
+        """
+        return self.supabase.table("inventory").select("*, items ( name )").eq("user_id", user_id).execute().data
+
+    def add_item_to_inventory(self, user_id: str, item_id: int):
+        """
+        Adds the given item to the inventory of the given user.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to add the item to
+        item_id : int
+            The id of the item to add
+        """
+
+        self.supabase.table("inventory").insert({"user_id": user_id, "item_id": item_id}).execute()
+    
+    def remove_item_from_inventory(self, user_id: str, id: int):
+        """
+        Removes the given item from the inventory of the given user.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user to remove the item from
+        item_id : int
+            The id of the item to remove
+        """
+
+        self.supabase.table("inventory").delete().eq("user_id", user_id).eq("id", id).execute()
+    
+    def get_item_inventory(self, user_id: str, item_name: str):
+        return self.supabase.table("inventory_count").select("*, items ( name )").eq("user_id", user_id).eq("name", item_name).execute().data
+
+    def update_item_inventory(self, user_id: str, inventory_id: int, uses_left: int):
+        """
+        Updates the inventory for a given item of the user with the new number of uses left.
+
+        Parameters
+        ----------
+        user_id : str
+            The id of the user whose inventory is to be updated
+        inventory_id : int
+            The id of the inventory entry to be updated
+        uses_left : int
+            The updated number of uses left for the item
+        """
+        self.supabase.table("inventory_count").update({"user_id": user_id,  "id" : inventory_id, "uses_left": uses_left}).execute()
+    
+    
 # Global instance baby
-
 db = DB()
 
 __all__ = ["db"]

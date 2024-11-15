@@ -43,8 +43,8 @@ async def help(ctx, command_name: str = None):
       await ctx.send(embed=embed)
   else:
       embed = discord.Embed(
-          title="Help - List of Commands",
-          description="Here are the available commands:",
+          title="SOS BOARD",
+          description="This here command lets ya see all the shop items available, folks!",
           color=discord.Color.green()
       )
       
@@ -59,6 +59,21 @@ async def help(ctx, command_name: str = None):
           command_descriptions = "\n".join([f"`{ctx.prefix}{cmd.name}` - {cmd.help}" for cmd in other_commands])
           embed.add_field(name="Other Commands", value=command_descriptions, inline=False)
       await ctx.send(embed=embed)
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("Command not found. Please use a valid command!")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("You are missing a required argument for this command.")
+    elif isinstance(error, commands.BadArgument):
+        await ctx.send("Invalid argument. Please check your input and try again.")
+    else:
+        # Generic error message for unexpected errors
+        await ctx.send("An unexpected error occurred. Please try again later.")
+        # Log the error for debugging
+        print(f"Error occurred: {error}")
 
 async def main():
   async with bot:

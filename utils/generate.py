@@ -1,4 +1,5 @@
 import discord
+import asyncio
 
 async def generate_leaderboard_txt(bot, leaderboard, name) -> str:
   """
@@ -22,9 +23,9 @@ async def generate_leaderboard_txt(bot, leaderboard, name) -> str:
   msg += f"{'Rank':<5} | {'Name':<45} | {'Count':>5}\n"
   msg += "-" * 65 + "\n"  # Add a separator line
   for i, user in enumerate(leaderboard):
-    userData = await bot.fetch_user(user["userId"])
+    user_data = await bot.fetch_user(user["user_id"])
     rank = i + 1
-    name = userData.name
+    name = user_data.name
     count = user["count"]
     msg += f"{rank:<5} | {name:<45} | {count:>5}\n"  # Adjust columns for alignment
   msg += "```"
@@ -32,7 +33,7 @@ async def generate_leaderboard_txt(bot, leaderboard, name) -> str:
   return msg
 
 
-async def generate_leaderboard_embed(bot, leaderboard, name: str, description: str, countName: str, inUsers: bool) -> discord.Embed:
+async def generate_leaderboard_embed(bot, leaderboard, name: str, description: str, count_name: str, in_users: bool) -> discord.Embed:
   """
   Generates an embed leaderboard message.
 
@@ -51,15 +52,15 @@ async def generate_leaderboard_embed(bot, leaderboard, name: str, description: s
     An embed message representing the leaderboard
   """
   embed = discord.Embed(title=name, description=description, color=discord.Color.blue())
-  print(leaderboard)
-  for i, user in enumerate(leaderboard):
-    userData = await bot.fetch_user(user["id" if inUsers else "userId"])
+  user_ids = [user["id" if in_users else "user_id"] for user in leaderboard]
+  users_data = await asyncio.gather(*(bot.fetch_user(user_id) for user_id in user_ids))
+  for i, (user, user_data) in enumerate(zip(leaderboard, users_data)):
     rank = i + 1
-    name = userData.name
-    count = user[countName]
+    name = user_data.name
+    count = user[count_name]
     if rank == 1:
-      embed.set_author(name=f"{name} is the KING 👑", icon_url=userData.avatar.url)
-    embed.add_field(name=f"{rank}. {name}", value=f"{countName.capitalize()}: {count}", inline=False)
+      embed.set_author(name=f"{name} is the KING 👑", icon_url=user_data.avatar.url)
+    embed.add_field(name=f"{rank}. {name}", value=f"{count_name.capitalize()}: {count}", inline=False)
   return embed
 
 async def generate_global_leaderboard(bot, leaderboard) -> discord.Embed:

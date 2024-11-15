@@ -6,3 +6,20 @@
   - https://huggingface.co/unitary/toxic-bert
 - add level/points leaderboard
 - make command to check other level
+
+- whips - Used to prevent slave rebellion
+- slaves (100 each)
+  - make slaves nameable
+    - put that in inventory table
+  - make them tradable
+  - make some have perks
+    - inventory_perks table
+- gun loot crate
+  - rarer the gun - more successful to rob
+- phone (pro max)
+  - to prevent robbing
+- profiles
+- safe (100 each)
+  - to upgrade bank
+
+- item to decrease ratelimit (1000 each)
