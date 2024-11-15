@@ -37,6 +37,7 @@ def multiplier(text: str) -> float:
     """
     toxicity = detect_toxicity(confusables.normalize(text))
     toxicity = toxicity['severe_toxicity'] + toxicity['threat']
+    print(f"Detected toxicity: {toxicity}")
     return 1.0 + toxicity
 
 def detect_word(text: str) -> int:
