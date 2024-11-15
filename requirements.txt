@@ -3,3 +3,4 @@ python-dotenv
 unidecode
 supabase
 confusables
+detoxify

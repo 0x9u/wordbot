@@ -2,9 +2,7 @@ import discord
 from discord.ext import commands
 import time
 from db import db
-from utils import detect_word
-from utils import max_xp
-
+from utils import detect_word, max_xp, multiplier
 # points system
 
 class Points(commands.Cog):
@@ -38,8 +36,14 @@ class Points(commands.Cog):
 
       if current_time - self.last_msg_time.get(user_id, 0) >= ratelimit:
         self.last_msg_time[user_id] = current_time
-        db.update_user_coins(user_id, self.coin_rate)
-        if db.update_user_xp(user_id, self.xp_rate):
+        
+        toxicity = multiplier(message.content)
+        
+        if toxicity > 1.5:
+          await message.channel.send(f"{message.author.mention} {toxicity}x multiplier for toxic message.")
+        
+        db.update_user_coins(user_id, self.coin_rate * toxicity)
+        if db.update_user_xp(user_id, self.xp_rate * toxicity):
           await message.channel.send(f"Congrats {message.author.mention}, you leveled up!")
   
   @commands.command(name="count", help="Display the count of the user.")
